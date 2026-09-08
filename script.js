@@ -397,3 +397,54 @@ document.querySelectorAll('.reserve-jump').forEach(el=>{
     updateFormPrice();
   });
 });
+
+
+// V4.35 — synchronisation directe et sans ambiguïté des dates
+// du bloc Tarifs vers le formulaire de réservation.
+function copyAvailabilityDatesToBookingForm(){
+  const topArrival=document.getElementById('arrival');
+  const topDeparture=document.getElementById('departure');
+  const formArrival=document.getElementById('formArrival');
+  const formDeparture=document.getElementById('formDeparture');
+
+  if(!topArrival || !topDeparture || !formArrival || !formDeparture) return;
+
+  const apply=(source,target)=>{
+    target.value=source.value || '';
+
+    const targetText=target.closest('.mobile-date-box')?.querySelector('.mobile-date-text');
+    if(targetText){
+      if(source.value){
+        const [y,m,d]=source.value.split('-');
+        targetText.textContent=(y && m && d) ? `${d}/${m}/${y}` : source.value;
+      }else{
+        targetText.textContent='jj/mm/aaaa';
+      }
+    }
+
+    target.dispatchEvent(new Event('input',{bubbles:true}));
+    target.dispatchEvent(new Event('change',{bubbles:true}));
+  };
+
+  apply(topArrival,formArrival);
+  apply(topDeparture,formDeparture);
+}
+
+// Synchronisation immédiate dès qu'une date est choisie en haut.
+['arrival','departure'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el){
+    el.addEventListener('input',copyAvailabilityDatesToBookingForm);
+    el.addEventListener('change',copyAvailabilityDatesToBookingForm);
+  }
+});
+
+// Et synchronisation forcée avant le saut vers le formulaire.
+const reserveButtonV435=document.getElementById('reserveJump');
+if(reserveButtonV435){
+  reserveButtonV435.addEventListener('click',()=>{
+    copyAvailabilityDatesToBookingForm();
+    setTimeout(copyAvailabilityDatesToBookingForm,0);
+    setTimeout(copyAvailabilityDatesToBookingForm,80);
+  },true);
+}
