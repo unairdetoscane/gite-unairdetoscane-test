@@ -430,3 +430,32 @@
     cursor:pointer!important;
   }
 }
+
+
+/* V4.32 — correction PC : le clic est capté par toute la boîte,
+   puis le JavaScript ouvre le calendrier avec showPicker().
+   On neutralise l'overlay natif de V4.31 qui interceptait le clic. */
+@media (min-width:901px){
+  .mobile-date-box{
+    cursor:pointer!important;
+  }
+
+  .mobile-date-box input[type="date"]{
+    position:absolute!important;
+    width:1px!important;
+    height:1px!important;
+    min-width:1px!important;
+    max-width:1px!important;
+    inset:auto!important;
+    right:0!important;
+    bottom:0!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    opacity:0!important;
+    overflow:hidden!important;
+    clip:rect(0 0 0 0)!important;
+    clip-path:inset(50%)!important;
+    pointer-events:none!important;
+  }
+}
