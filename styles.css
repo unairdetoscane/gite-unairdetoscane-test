@@ -329,3 +329,81 @@
     box-sizing:border-box!important;
   }
 }
+
+
+/* V4.30 — corrections finales menu mobile + champs date + alignement PC */
+
+/* Le vrai input date est totalement sorti de l'affichage.
+   Il ne peut donc plus faire apparaître un second "jj/mm/aaaa". */
+.mobile-date-box input[type="date"]{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  min-width:1px!important;
+  max-width:1px!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  opacity:0!important;
+  overflow:hidden!important;
+  clip:rect(0 0 0 0)!important;
+  clip-path:inset(50%)!important;
+  white-space:nowrap!important;
+  pointer-events:none!important;
+}
+
+/* Ordinateur : les colonnes Adultes et Enfants font exactement la largeur
+   des listes, avec le même écart de 10px qu'entre les autres champs. */
+@media (min-width:701px){
+  .date-search{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) 108px 108px!important;
+    column-gap:10px!important;
+    row-gap:10px!important;
+    align-items:end!important;
+  }
+
+  .date-search .guest-select-field{
+    width:108px!important;
+    min-width:108px!important;
+    max-width:108px!important;
+    justify-self:start!important;
+  }
+
+  .date-search .guest-select-field select{
+    width:108px!important;
+    min-width:108px!important;
+    max-width:108px!important;
+  }
+
+  .date-search #checkDates{
+    grid-column:1!important;
+    grid-row:2!important;
+  }
+
+  .date-search .reserve-jump{
+    grid-column:2!important;
+    grid-row:2!important;
+  }
+}
+
+/* Téléphone/tablette : menu toujours visible en haut de l'écran */
+@media (max-width:900px){
+  body{
+    padding-top:76px!important;
+  }
+
+  .site-header{
+    position:fixed!important;
+    top:0!important;
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    z-index:9999!important;
+  }
+}
+
+@media (max-width:600px){
+  body{
+    padding-top:68px!important;
+  }
+}

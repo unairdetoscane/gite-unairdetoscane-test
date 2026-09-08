@@ -349,3 +349,26 @@ function positionRequestedSection(){
 window.addEventListener('DOMContentLoaded',positionRequestedSection);
 window.addEventListener('load',positionRequestedSection);
 window.addEventListener('pageshow',positionRequestedSection);
+
+
+// V4.30 — ouverture du calendrier en cliquant sur toute la zone visuelle.
+// Le champ natif reste caché : aucun "jj/mm/aaaa" supplémentaire ne peut s'afficher.
+document.querySelectorAll('.mobile-date-box').forEach(box=>{
+  const input=box.querySelector('input[type="date"]');
+  if(!input) return;
+
+  box.style.cursor='pointer';
+  box.addEventListener('click',()=>{
+    try{
+      if(typeof input.showPicker==='function'){
+        input.showPicker();
+      }else{
+        input.focus({preventScroll:true});
+        input.click();
+      }
+    }catch(e){
+      input.focus({preventScroll:true});
+      input.click();
+    }
+  });
+});
