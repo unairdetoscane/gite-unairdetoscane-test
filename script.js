@@ -117,12 +117,28 @@ function totalCapacityOK(adults,children){return adults+children<=cfg.maxGuests}
 const topChildCount=document.getElementById('childCount');
 if(topChildCount)topChildCount.addEventListener('change',()=>renderChildAges('childAgesTop',Number(topChildCount.value),false));
 
+function setReservationDate(input,value){
+  if(!input) return;
+  input.value=value || '';
+  const display=input.closest('.mobile-date-box')?.querySelector('.mobile-date-text');
+  if(display){
+    if(value){
+      const [y,m,d]=value.split('-');
+      display.textContent=(y&&m&&d)?`${d}/${m}/${y}`:value;
+    }else{
+      display.textContent='jj/mm/aaaa';
+    }
+  }
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+  input.dispatchEvent(new Event('change',{bubbles:true}));
+}
+
 function syncTopToForm(){
   const av=document.getElementById('arrival').value,de=document.getElementById('departure').value;
   const adults=Number(document.getElementById('guestCount').value),children=Number(document.getElementById('childCount').value);
   const ages=getChildAges('childAgesTop');
-  form.querySelector('[name="arrival"]').value=av;
-  form.querySelector('[name="departure"]').value=de;
+  setReservationDate(form.querySelector('[name="arrival"]'),av);
+  setReservationDate(form.querySelector('[name="departure"]'),de);
   form.querySelector('[name="adults"]').value=String(adults);
   form.querySelector('[name="children"]').value=String(children);
   renderChildAges('childAgesForm',children,true,ages);
@@ -374,37 +390,10 @@ document.querySelectorAll('.mobile-date-box').forEach(box=>{
 });
 
 
-// V4.33 — préremplir les dates du formulaire de réservation
-// avec les dates choisies dans le bloc "Tarifs & disponibilités".
-function syncTopDatesToReservationForm(){
-  const topArrival=document.getElementById('arrival');
-  const topDeparture=document.getElementById('departure');
-  const form=document.querySelector('#reserver form, .request-form');
-  if(!form) return;
-
-  const formArrival=form.querySelector('input[name="arrival"]');
-  const formDeparture=form.querySelector('input[name="departure"]');
-
-  if(topArrival && formArrival && topArrival.value){
-    formArrival.value=topArrival.value;
-    formArrival.dispatchEvent(new Event('input',{bubbles:true}));
-    formArrival.dispatchEvent(new Event('change',{bubbles:true}));
-  }
-
-  if(topDeparture && formDeparture && topDeparture.value){
-    formDeparture.value=topDeparture.value;
-    formDeparture.dispatchEvent(new Event('input',{bubbles:true}));
-    formDeparture.dispatchEvent(new Event('change',{bubbles:true}));
-  }
-}
-
-// Quand on clique sur "Réserver" depuis le bloc tarifs, reprendre les dates
-// comme c'est déjà fait pour Adultes / Enfants / âges.
-document.querySelectorAll('.reserve-jump, a[href="#reserver"], button[data-target="#reserver"]').forEach(el=>{
+// V4.34 — le bouton Réserver reprend systématiquement toutes les valeurs du bloc tarifs.
+document.querySelectorAll('.reserve-jump').forEach(el=>{
   el.addEventListener('click',()=>{
-    syncTopDatesToReservationForm();
-    // Un second passage très court couvre le cas où le code existant
-    // reconstruit/actualise certains champs juste après le clic.
-    setTimeout(syncTopDatesToReservationForm,0);
+    syncTopToForm();
+    updateFormPrice();
   });
 });
