@@ -217,36 +217,6 @@ const todayIso=iso(new Date());document.querySelectorAll('input[type="date"]').f
 // Évite qu'un chargement asynchrone des avis ne fasse bouger la position de la page.
 
 
-// V4.25 — arrivée depuis une autre page vers index.html#tarifs / #reserver / etc.
-// Le navigateur peut positionner l'ancre avant que les photos aient fini de charger,
-// ce qui décale ensuite la section. On recalcule donc après le chargement complet.
-function correctIncomingHashPosition(){
-  const hash=location.hash;
-  if(!hash || hash.length<2) return;
-  const target=document.querySelector(hash);
-  if(!target) return;
-
-  const header=document.querySelector('.site-header');
-  const offset=(header ? header.offsetHeight : 0)+10;
-  const y=Math.max(0,target.getBoundingClientRect().top+window.scrollY-offset);
-  window.scrollTo({top:y,behavior:'auto'});
-}
-
-window.addEventListener('load',()=>{
-  if(location.hash){
-    correctIncomingHashPosition();
-    setTimeout(correctIncomingHashPosition,180);
-    setTimeout(correctIncomingHashPosition,650);
-  }
-});
-
-window.addEventListener('pageshow',()=>{
-  if(location.hash){
-    setTimeout(correctIncomingHashPosition,0);
-    setTimeout(correctIncomingHashPosition,250);
-  }
-});
-
 if ('scrollRestoration' in history) history.scrollRestoration='manual';
 window.addEventListener('pageshow',()=>{ if(!location.hash && window.scrollY < 180) window.scrollTo(0,0); });
 
@@ -327,41 +297,55 @@ window.addEventListener('pageshow',()=>{ if(!location.hash && window.scrollY < 1
 })();
 
 
-// V4.26 — affichage lisible des dates dans les boîtes visuelles
+
+
+// V4.28 — affiche la date dans la boîte sans laisser Safari afficher
+// son propre "jj/mm/aaaa" hors du champ.
 function formatDateForDisplay(value){
   if(!value) return 'jj/mm/aaaa';
-  const parts=value.split('-');
-  return parts.length===3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : value;
+  const [y,m,d]=value.split('-');
+  return (y && m && d) ? `${d}/${m}/${y}` : value;
 }
-document.querySelectorAll('.date-control input[type="date"]').forEach(input=>{
-  const display=input.closest('.date-control')?.querySelector('.date-display');
+document.querySelectorAll('.mobile-date-box input[type="date"]').forEach(input=>{
+  const box=input.closest('.mobile-date-box');
+  const display=box?.querySelector('.mobile-date-text');
   const sync=()=>{ if(display) display.textContent=formatDateForDisplay(input.value); };
   input.addEventListener('change',sync);
   input.addEventListener('input',sync);
   sync();
 });
 
-// V4.26 — navigation depuis Avis / À découvrir / Mentions légales.
-// On n'utilise plus une ancre #tarifs au chargement : la page finit d'abord
-// de se charger, puis le script positionne précisément la section demandée.
-function goToRequestedSection(){
+// V4.28 — navigation fiable depuis une autre page.
+// On attend que la mise en page soit stabilisée puis on positionne exactement #tarifs.
+function positionRequestedSection(){
   const params=new URLSearchParams(location.search);
   const section=params.get('go');
   if(!section) return;
+
   const target=document.getElementById(section);
   if(!target) return;
 
-  const place=()=>{
+  const scrollNow=()=>{
     const header=document.querySelector('.site-header');
-    const offset=(header ? header.getBoundingClientRect().height : 0)+10;
+    const offset=(header?.offsetHeight || 0)+8;
     const top=Math.max(0, target.getBoundingClientRect().top + window.scrollY - offset);
-    window.scrollTo({top, behavior:'auto'});
+    window.scrollTo(0, top);
   };
 
-  place();
-  requestAnimationFrame(()=>requestAnimationFrame(place));
-  setTimeout(place,150);
-  setTimeout(place,500);
+  // plusieurs recalages courts couvrent Safari + bfcache sans animation parasite
+  scrollNow();
+  requestAnimationFrame(()=>requestAnimationFrame(scrollNow));
+  [120,300,700,1200].forEach(ms=>setTimeout(scrollNow,ms));
+
+  // si une image située avant la section finit malgré tout de charger,
+  // on recale immédiatement la section
+  document.querySelectorAll('#photos img').forEach(img=>{
+    if(!img.complete){
+      img.addEventListener('load',scrollNow,{once:true});
+      img.addEventListener('error',scrollNow,{once:true});
+    }
+  });
 }
-window.addEventListener('load',goToRequestedSection);
-window.addEventListener('pageshow',goToRequestedSection);
+window.addEventListener('DOMContentLoaded',positionRequestedSection);
+window.addEventListener('load',positionRequestedSection);
+window.addEventListener('pageshow',positionRequestedSection);
