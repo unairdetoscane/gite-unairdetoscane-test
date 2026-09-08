@@ -416,3 +416,39 @@ input[type="date"]{
     max-width:100%!important;
   }
 }
+
+
+/* V4.27 — boutons Vérifier / Réserver sur une ligne séparée */
+@media (min-width:701px){
+  .date-search{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+
+  .date-search .actions{
+    grid-column:1 / -1!important;
+    width:100%!important;
+    display:flex!important;
+    justify-content:flex-start!important;
+    gap:12px!important;
+    margin-top:4px!important;
+  }
+
+  .date-search .actions .btn{
+    width:auto!important;
+    min-width:120px!important;
+  }
+}
+
+@media (max-width:700px){
+  .date-search .actions{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:10px!important;
+  }
+
+  .date-search .actions .btn{
+    width:100%!important;
+    min-width:0!important;
+  }
+}
