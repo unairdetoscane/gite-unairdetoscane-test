@@ -459,3 +459,15 @@
     pointer-events:none!important;
   }
 }
+
+
+/* V4.36 — PC uniquement :
+   ancrer le calendrier natif sur le coin bas gauche du champ date
+   au lieu du coin bas droit. Aucun changement mobile. */
+@media (min-width:901px){
+  .mobile-date-box input[type="date"]{
+    left:0!important;
+    right:auto!important;
+    bottom:0!important;
+  }
+}
