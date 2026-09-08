@@ -372,3 +372,39 @@ document.querySelectorAll('.mobile-date-box').forEach(box=>{
     }
   });
 });
+
+
+// V4.33 — préremplir les dates du formulaire de réservation
+// avec les dates choisies dans le bloc "Tarifs & disponibilités".
+function syncTopDatesToReservationForm(){
+  const topArrival=document.getElementById('arrival');
+  const topDeparture=document.getElementById('departure');
+  const form=document.querySelector('#reserver form, .request-form');
+  if(!form) return;
+
+  const formArrival=form.querySelector('input[name="arrival"]');
+  const formDeparture=form.querySelector('input[name="departure"]');
+
+  if(topArrival && formArrival && topArrival.value){
+    formArrival.value=topArrival.value;
+    formArrival.dispatchEvent(new Event('input',{bubbles:true}));
+    formArrival.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+
+  if(topDeparture && formDeparture && topDeparture.value){
+    formDeparture.value=topDeparture.value;
+    formDeparture.dispatchEvent(new Event('input',{bubbles:true}));
+    formDeparture.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+}
+
+// Quand on clique sur "Réserver" depuis le bloc tarifs, reprendre les dates
+// comme c'est déjà fait pour Adultes / Enfants / âges.
+document.querySelectorAll('.reserve-jump, a[href="#reserver"], button[data-target="#reserver"]').forEach(el=>{
+  el.addEventListener('click',()=>{
+    syncTopDatesToReservationForm();
+    // Un second passage très court couvre le cas où le code existant
+    // reconstruit/actualise certains champs juste après le clic.
+    setTimeout(syncTopDatesToReservationForm,0);
+  });
+});
