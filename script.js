@@ -215,6 +215,38 @@ const todayIso=iso(new Date());document.querySelectorAll('input[type="date"]').f
 
 
 // Évite qu'un chargement asynchrone des avis ne fasse bouger la position de la page.
+
+
+// V4.25 — arrivée depuis une autre page vers index.html#tarifs / #reserver / etc.
+// Le navigateur peut positionner l'ancre avant que les photos aient fini de charger,
+// ce qui décale ensuite la section. On recalcule donc après le chargement complet.
+function correctIncomingHashPosition(){
+  const hash=location.hash;
+  if(!hash || hash.length<2) return;
+  const target=document.querySelector(hash);
+  if(!target) return;
+
+  const header=document.querySelector('.site-header');
+  const offset=(header ? header.offsetHeight : 0)+10;
+  const y=Math.max(0,target.getBoundingClientRect().top+window.scrollY-offset);
+  window.scrollTo({top:y,behavior:'auto'});
+}
+
+window.addEventListener('load',()=>{
+  if(location.hash){
+    correctIncomingHashPosition();
+    setTimeout(correctIncomingHashPosition,180);
+    setTimeout(correctIncomingHashPosition,650);
+  }
+});
+
+window.addEventListener('pageshow',()=>{
+  if(location.hash){
+    setTimeout(correctIncomingHashPosition,0);
+    setTimeout(correctIncomingHashPosition,250);
+  }
+});
+
 if ('scrollRestoration' in history) history.scrollRestoration='manual';
 window.addEventListener('pageshow',()=>{ if(!location.hash && window.scrollY < 180) window.scrollTo(0,0); });
 
@@ -293,3 +325,43 @@ window.addEventListener('pageshow',()=>{ if(!location.hash && window.scrollY < 1
   carousel?.addEventListener('mouseleave',restart);
   restart();
 })();
+
+
+// V4.26 — affichage lisible des dates dans les boîtes visuelles
+function formatDateForDisplay(value){
+  if(!value) return 'jj/mm/aaaa';
+  const parts=value.split('-');
+  return parts.length===3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : value;
+}
+document.querySelectorAll('.date-control input[type="date"]').forEach(input=>{
+  const display=input.closest('.date-control')?.querySelector('.date-display');
+  const sync=()=>{ if(display) display.textContent=formatDateForDisplay(input.value); };
+  input.addEventListener('change',sync);
+  input.addEventListener('input',sync);
+  sync();
+});
+
+// V4.26 — navigation depuis Avis / À découvrir / Mentions légales.
+// On n'utilise plus une ancre #tarifs au chargement : la page finit d'abord
+// de se charger, puis le script positionne précisément la section demandée.
+function goToRequestedSection(){
+  const params=new URLSearchParams(location.search);
+  const section=params.get('go');
+  if(!section) return;
+  const target=document.getElementById(section);
+  if(!target) return;
+
+  const place=()=>{
+    const header=document.querySelector('.site-header');
+    const offset=(header ? header.getBoundingClientRect().height : 0)+10;
+    const top=Math.max(0, target.getBoundingClientRect().top + window.scrollY - offset);
+    window.scrollTo({top, behavior:'auto'});
+  };
+
+  place();
+  requestAnimationFrame(()=>requestAnimationFrame(place));
+  setTimeout(place,150);
+  setTimeout(place,500);
+}
+window.addEventListener('load',goToRequestedSection);
+window.addEventListener('pageshow',goToRequestedSection);
