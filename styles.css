@@ -407,3 +407,26 @@
     padding-top:68px!important;
   }
 }
+
+
+/* V4.31 — PC uniquement : toute la zone de date ouvre le calendrier.
+   Ne modifie pas le comportement mobile. */
+@media (min-width:901px){
+  .mobile-date-box input[type="date"]{
+    position:absolute!important;
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    min-width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    opacity:0.001!important;
+    overflow:visible!important;
+    clip:auto!important;
+    clip-path:none!important;
+    pointer-events:auto!important;
+    cursor:pointer!important;
+  }
+}
